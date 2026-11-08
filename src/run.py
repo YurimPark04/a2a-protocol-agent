@@ -2,7 +2,7 @@ from graph import build_graph
 
 graph = build_graph()
 
-# invoke 안에 들어가는 값은 시작상태값임
+# graph.invoke 안에 들어가는 값은 시작 상태값임
 # trip_id 와 log 는 시작상태값으로 넣어주어야 한다. (log는 빈 리스트로 시작)
 # 나머지값은 노드들이 함수를 실행하면서 채워나간다. (receipts, total, report)
 
@@ -14,6 +14,7 @@ print("보고:", result["report"])
 print("기록:")
 for line in result["log"]:
     print(" -", line)
+
 
 
 """
@@ -44,5 +45,7 @@ for line in result["log"]:
 * 하냐 안하냐의 차이.. 구조적 관점에서 막아두는게 가장 좋은 선택지가 될 거고, 
 
 * 이 에이전트를 a2a로 열어서 다른 사용자가 부르게 될 때, 더욱 더 중요해질것
-* 부르는쪽은 우리가 돌려준 숫자만 믿고 동작을 함 -> 그 숫자가 모델이 생성한 값이라면 그것 자체가 버그인 것임
+* 부르는쪽은 우리가 돌려준 숫자만 믿고 동작을 하기 때문 -> 그 숫자가 모델이 생성한 값이라면 그것 자체가 버그임
+
+
 """
