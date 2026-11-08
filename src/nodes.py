@@ -25,6 +25,7 @@ model = ChatOllama(
 
 
 # LOOP 와 유사한 개념
+# MAX_STEPS = 1
 MAX_STEPS = 6
 
 # CHECK_POLICY는 비즈니스 로직에서 관리를 해야 하므로 제외
@@ -44,7 +45,7 @@ def plan(state: ExpenseState) -> dict:
     return {"messages": new, "steps": state.get("steps", 0) + 1}  # STEP 증가
 
 
-# 도구 호출을 위한 함수 작성
+# 도구 호출을 위한 함수 작성 
 def run_tools(state: ExpenseState) -> dict:
     ai = state["messages"][-1]
     out = {"messages": [], "log": []}
@@ -64,8 +65,12 @@ def run_tools(state: ExpenseState) -> dict:
 
 # 파이썬 비즈니스 로직 
 def compute(state: ExpenseState) -> dict:
-    receipts = state["receipts"]  # 모든 영수증 확인
-    rates = state["rates"]
+    # receipts = state["receipts"]  # 모든 영수증 확인
+    # rates = state["rates"]
+
+    # 상한을 걸어두면, 상한이 걸린 다음 경로로 돌아야 함
+    receipts = state.get("receipts") or []  # state 가 있을 수 있고, 없을 수도 있다를 가정한 상태로 진행
+    rates = state.get("rates") or {}
     total = 0
     violations = []
     for r in receipts:
@@ -78,6 +83,15 @@ def compute(state: ExpenseState) -> dict:
     return {"total": total, "violations": violations,
             "log": [f"영수증 {len(receipts)}건으로 원화 합계 {total}원 계산",
                     f"규정 위반 {len(violations)}건"]}
+
+
+# 밖으로 보여주고자 하는 문장
+def escalate(state: ExpenseState) -> dict:
+    report = (
+        f"출장 {state['trip_id']}의 원화 합계는 {state['total']}원입니다. "
+        "규정 위반이 있어 사람 승인이 필요합니다."
+    )
+    return {"report": report, "log": ["승인 필요"]}
 
 
 
@@ -136,6 +150,8 @@ def tally(state: ExpenseState) -> dict:
 모델이 하는 역할
 
 1. 다음에 무엇을 가지고 오는가
-2. 다 모였을 때, 언제 중단하는가 (값을 만들고 검증하는 건 비즈니스 로직으로 (모델이 위임할 부분은 x))
+2. 다 모였을 때, 언제 중단하는가?
+    - 값을 만들고 검증하는 건 비즈니스 로직으로 (모델이 위임할 부분은 x)
+
 
 """
