@@ -43,7 +43,7 @@ def after_compute(state: ExpenseState) -> str:
 
 
 # 
-def build_graph():
+def build_graph(checkpointer=None):
     builder = StateGraph(ExpenseState)
     builder.add_node("plan", plan)
     builder.add_node("tools", run_tools)
@@ -59,7 +59,7 @@ def build_graph():
     builder.add_edge("escalate", END)
     builder.add_edge("summarize", END)
 
-    return builder.compile()
+    return builder.compile(checkpointer = checkpointer)   # checkpointer 추가
 
 """
 docker compose exec app python -c "from langgraph.graph import START, END; print(START, END)"
