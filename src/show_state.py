@@ -1,22 +1,16 @@
-import os
 
-from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph.checkpoint.memory import MemorySaver, InMemorySaver
 
 from graph import build_graph
 
-with PostgresSaver.from_conn_string(os.environ["POSTGRES_URL"]) as saver:
-    graph = build_graph(checkpointer=saver)
-    config = {"configurable": {"thread_id": "trip-3"}}
+thread = sys.argv[1] if len(sys.argv) > 1 else "trip-3"
+graph = build_graph(checkpointer=MemorySaver())
+snapshot = graph.get_state({"configurable": {"thread_id": thread}})
 
-    snapshot = graph.get_state(config)
-    if not snapshot.values:
-        print("저장된 상태 없음")
-    else:
-        print("합계:", snapshot.values["total"])
-        print("위반:", len(snapshot.values["violations"]), "건")
-        print()
-        print("체크포인트 이력 (최신부터):")
-        for snap in graph.get_state_history(config):
-            step = snap.metadata["step"]
-            nxt = snap.next or ("끝",)
-            print(f"  step {step:>2} · 다음 노드 {nxt}")
+if snapshot.values:
+    print("찾음:", snapshot.values["total"])
+else:
+    print("저장된 상태 없음")
+
+
+print(MemorySaver is InMemorySaver)

@@ -12,17 +12,37 @@ services:
       timeout: 5s
       retries: 30
 
-  app:
+  app-2:
     build: .
-    container_name: a2a-app
+    container_name: a2a-app-2
     working_dir: /app
     volumes:
       - ./src:/app/src
     environment:
       OLLAMA_URL: http://ollama:11434
+      POSTGRES_URL: postgresql://a2a:a2a@postgres:5432/a2a
     depends_on:
       ollama:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+
+  postgres:
+    image: postgres:17
+    container_name: a2a-postgres
+    environment:
+      POSTGRES_USER: a2a
+      POSTGRES_PASSWORD: a2a
+      POSTGRES_DB: a2a
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U a2a" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
 volumes:
   ollama-data:
+  pg-data:
